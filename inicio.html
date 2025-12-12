@@ -3,61 +3,561 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Trayectorias y Lugares Geométricos — Juego</title>
-  <link rel="stylesheet" href="inicio.css" />
+  <title>Trayectorias y Lugares Geométricos — Juego (App)</title>
+  <style>
+    /* ===== Reset y variables ===== */
+    :root{
+      --accent:#7f5af0;
+      --muted:#6b6b81;
+      --bg:#f7f6fb;
+      --card:#ffffff;
+      --gap:12px;
+      --radius:12px;
+      --btn-padding:12px 16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter, Poppins, system-ui, Arial;background:var(--bg);color:#222;-webkit-font-smoothing:antialiased}
+    .app {
+      max-width:1100px;
+      margin:0 auto;
+      padding:72px 14px 28px;
+    }
+
+    /* ===== Barra superior tipo app (fija) ===== */
+    .appbar {
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      height:60px;
+      background:linear-gradient(90deg,rgba(127,90,240,0.98),rgba(99,102,241,0.95));
+      color:#fff;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:0 14px;
+      z-index:40;
+      box-shadow:0 6px 20px rgba(31,22,80,0.12);
+    }
+    .appbar .brand {font-weight:700;font-size:16px}
+    .appbar .user {
+      margin-left:auto;
+      display:flex;
+      gap:8px;
+      align-items:center;
+      font-size:14px;
+      opacity:0.95;
+    }
+    .appbar button {
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.18);
+      color:#fff;
+      padding:8px 10px;
+      border-radius:10px;
+      font-weight:600;
+      cursor:pointer;
+    }
+
+    /* ===== Contenedor principal (móvil-first) ===== */
+    .card {
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:14px;
+      margin-bottom:var(--gap);
+      box-shadow:0 8px 20px rgba(31,22,80,0.04);
+    }
+
+    label {display:block;font-weight:600;color:var(--muted);margin-bottom:6px;font-size:13px}
+    input[type=text], select {
+      width:100%;
+      padding:10px;
+      border-radius:10px;
+      border:1px solid #eee;
+      font-size:15px;
+    }
+
+    .controls { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;}
+    .btn {
+      padding:var(--btn-padding);
+      border-radius:10px;
+      border:none;
+      background:var(--accent);
+      color:#fff;
+      font-weight:700;
+      cursor:pointer;
+      font-size:15px;
+      flex:1 1 auto;
+      min-width:120px;
+    }
+    .btn.reset { background:#ef4444; }
+    .btn.secondary { background:#33b17a; }
+
+    .muted { color:var(--muted); font-size:13px; }
+
+    /* problema y pasos */
+    #problemaTexto { min-height:48px; border:1px dashed rgba(127,90,240,0.12); padding:10px; border-radius:10px }
+    #stepsList .step { display:flex; gap:8px; align-items:center; margin-top:10px; flex-wrap:wrap; }
+    #stepsList .step label { min-width:90px; margin:0 }
+    #stepsList input[type=text]{ flex:1 1 140px; }
+    .verdict { min-width:120px; font-weight:700; font-size:14px }
+
+    /* canvas wrapper */
+    .canvas-wrap { background:var(--card); padding:12px; border-radius:12px; box-shadow:0 8px 20px rgba(31,22,80,0.04) }
+    canvas { display:block; width:100%; border-radius:10px; border:1px solid rgba(0,0,0,0.06); background:#fff }
+
+    /* ===== Desktop layout ===== */
+    @media(min-width:900px){
+      .top {
+        display:flex;
+        gap:18px;
+        align-items:flex-start;
+      }
+      .left { flex:1 }
+      .right { width:360px }
+      .canvas-wrap { margin-top:12px }
+      .app { padding-top:96px } /* espacio para appbar */
+    }
+
+    /* ===== Pequeños ajustes para pantallas medianas ===== */
+    @media(min-width:540px) and (max-width:899px){
+      .app { padding-top:80px }
+    }
+
+    /* ===== Styles móviles: mayor tamaño en botones táctiles ===== */
+    @media(max-width:539px){
+      .app { padding-top:76px }
+      .btn { padding:14px 16px; font-size:16px; }
+      .appbar { height:64px }
+      .appbar .brand { font-size:15px }
+    }
+
+    /* helper hidden */
+    .hidden { display:none !important; }
+  </style>
 </head>
-
 <body>
-<div class="wrap">
+  <div class="appbar" role="banner">
+    <div class="brand">Trayectorias y Lugares — App</div>
+    <div class="user">
+      <div id="usuarioNombreBar" class="muted" style="color:rgba(255,255,255,0.95)">(sin nombre)</div>
+      <button id="resetBtnTop" title="Reiniciar">Reiniciar</button>
+    </div>
+  </div>
 
-  <header>
-    <h1>Juego de Trayectorias y Lugares Geométricos</h1>
-    <p id="usuarioNombre" class="muted">(sin nombre)</p>
-  </header>
+  <main class="app" role="main">
+    <!-- Sección 1: Datos del jugador -->
+    <section class="card" aria-labelledby="sect-player">
+      <h3 id="sect-player" style="margin:0 0 8px 0">Datos del jugador</h3>
+      <label for="inputNombre">Tu nombre</label>
+      <input id="inputNombre" type="text" placeholder="Escribe tu nombre">
+    </section>
 
-  <div class="top-row">
-    <!-- PANEL IZQUIERDO -->
-    <div class="left-col">
-      <label>Tu nombre:</label>
-      <input type="text" id="inputNombre" placeholder="Escribe tu nombre">
-
-      <label>Modo de juego:</label>
+    <!-- Sección 2: Configuración -->
+    <section class="card" aria-labelledby="sect-config">
+      <h3 id="sect-config" style="margin:0 0 8px 0">Configuración</h3>
+      <label for="modo">Modo de juego</label>
       <select id="modo">
         <option value="">Selecciona...</option>
         <option value="construye">Construye la figura</option>
         <option value="identifica">Identifica la ecuación</option>
       </select>
 
-      <label>Dificultad:</label>
+      <label for="dificultad" style="margin-top:10px">Dificultad</label>
       <select id="dificultad">
         <option value="facil">Fácil</option>
         <option value="medio">Medio</option>
         <option value="dificil">Difícil</option>
       </select>
 
-      <br><br>
-      <button class="btn" id="startBtn">Iniciar</button>
-      <button class="btn next-btn hidden" id="nextProblem">Siguiente problema</button>
-      <button class="btn reset" id="resetBtn">Reiniciar</button>
-    </div>
+      <div class="controls">
+        <button id="startBtn" class="btn">Iniciar</button>
+        <button id="nextProblem" class="btn secondary hidden">Siguiente</button>
+        <button id="resetBtn" class="btn reset">Reiniciar</button>
+      </div>
+    </section>
 
-    <!-- PANEL DERECHO -->
-    <div class="right-col">
-      <h3>Problema</h3>
-      <div id="problemaTexto" class="problem">Inicia el juego para ver un problema.</div>
+    <!-- Sección 3 + 4 en móvil (problema + pasos) -->
+    <section class="card" aria-labelledby="sect-problem">
+      <h3 id="sect-problem" style="margin:0 0 8px 0">Problema</h3>
+      <div id="problemaTexto">Inicia el juego para ver un problema.</div>
 
-      <h3>Pasos</h3>
+      <h4 style="margin:12px 0 6px 0">Pasos</h4>
       <div id="stepsList" class="steps"></div>
-    </div>
-  </div>
+    </section>
 
-  <!-- CANVAS -->
-  <div class="canvas-wrap">
-    <canvas id="plano" width="600" height="400"></canvas>
-  </div>
+    <!-- Sección 5: Canvas -->
+    <section class="card canvas-wrap" aria-labelledby="sect-canvas">
+      <h3 id="sect-canvas" style="margin:0 0 8px 0">Plano (interactivo)</h3>
+      <div style="width:100%" id="canvasContainer">
+        <canvas id="plano" width="600" height="360" role="img" aria-label="Plano cartesiano"></canvas>
+      </div>
+    </section>
+  </main>
 
-</div>
+  <script>
+    /* ===== Helpers DOM ===== */
+    const canvas = document.getElementById('plano');
+    const container = document.getElementById('canvasContainer');
+    const ctx = canvas.getContext('2d');
 
-<script src="inicio.js"></script>
+    const problemaTexto = document.getElementById('problemaTexto');
+    const stepsList = document.getElementById('stepsList');
+    const usuarioNombre = document.getElementById('usuarioNombreBar');
+
+    const startBtn = document.getElementById('startBtn');
+    const nextBtn = document.getElementById('nextProblem');
+    const resetBtnTop = document.getElementById('resetBtnTop');
+    const resetBtn = document.getElementById('resetBtn');
+
+    /* ===== Canvas responsive / alta resolución =====
+       Escala el canvas según el ancho del contenedor y devicePixelRatio.
+    */
+    let origin = { x: 0, y: 0 };
+    let gridSize = 25;
+
+    function resizeCanvas() {
+      const DPR = window.devicePixelRatio || 1;
+      const cssWidth = Math.min(container.clientWidth, 1000); // límite de ancho
+      const cssHeight = Math.max(220, Math.round(cssWidth * 0.6)); // proporción 3:5 aprox
+
+      // establecer tamaño en device pixels
+      canvas.style.width = cssWidth + 'px';
+      canvas.style.height = cssHeight + 'px';
+      canvas.width = Math.round(cssWidth * DPR);
+      canvas.height = Math.round(cssHeight * DPR);
+
+      // actualizar gridSize relativo al DPR para mantener proporción visual
+      gridSize = 25 * DPR;
+      origin = { x: canvas.width / 2, y: canvas.height / 2 };
+
+      drawGrid();
+      if (currentProblem) {
+        if (currentProblem.type === 'circulo') {
+          plotCircle(currentProblem.data.h, currentProblem.data.k, currentProblem.data.r);
+        } else if (currentProblem.type === 'recta') {
+          plotLine(currentProblem.data.a, currentProblem.data.b, currentProblem.data.c);
+        }
+      }
+    }
+
+    window.addEventListener('resize', () => {
+      // ligera demora para evitar reflows continuos
+      clearTimeout(window._resizeTO);
+      window._resizeTO = setTimeout(resizeCanvas, 120);
+    });
+    window.addEventListener('orientationchange', resizeCanvas);
+
+    /* ===== Dibujo: cuadrícula, ejes y elementos ===== */
+    function drawGrid() {
+      // fondo
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // líneas de la cuadrícula
+      ctx.strokeStyle = '#e8e8ee';
+      ctx.lineWidth = Math.max(1, window.devicePixelRatio || 1);
+
+      // verticales
+      for (let x = 0; x <= canvas.width; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(Math.round(x) + 0.5, 0);
+        ctx.lineTo(Math.round(x) + 0.5, canvas.height);
+        ctx.stroke();
+      }
+      // horizontales
+      for (let y = 0; y <= canvas.height; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, Math.round(y) + 0.5);
+        ctx.lineTo(canvas.width, Math.round(y) + 0.5);
+        ctx.stroke();
+      }
+
+      // ejes principales
+      ctx.strokeStyle = '#444';
+      ctx.lineWidth = Math.max(2, (window.devicePixelRatio || 1) * 1.2);
+
+      ctx.beginPath();
+      ctx.moveTo(origin.x + 0.5, 0);
+      ctx.lineTo(origin.x + 0.5, canvas.height);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(0, origin.y + 0.5);
+      ctx.lineTo(canvas.width, origin.y + 0.5);
+      ctx.stroke();
+
+      // números (coordenadas)
+      ctx.fillStyle = '#333';
+      const fontSize = 12 * (window.devicePixelRatio || 1);
+      ctx.font = `${fontSize}px Arial`;
+      ctx.textBaseline = 'middle';
+
+      // cuantos números dibujamos (dependiente del número de casillas)
+      const halfCols = Math.floor((canvas.width / gridSize) / 2);
+      for (let i = -halfCols; i <= halfCols; i++) {
+        if (i === 0) continue;
+        const px = origin.x + i * gridSize;
+        ctx.fillText(i, px - 6 * (window.devicePixelRatio||1), origin.y + 14 * (window.devicePixelRatio||1));
+      }
+      const halfRows = Math.floor((canvas.height / gridSize) / 2);
+      for (let i = -halfRows; i <= halfRows; i++) {
+        if (i === 0) continue;
+        const py = origin.y - i * gridSize;
+        ctx.fillText(-i, origin.x - 18 * (window.devicePixelRatio||1), py + 4 * (window.devicePixelRatio||1));
+      }
+    }
+
+    function plotPoint(x, y, color = 'red') {
+      const px = origin.x + x * gridSize;
+      const py = origin.y - y * gridSize;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(px, py, 5 * (window.devicePixelRatio || 1), 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function plotCircle(h, k, r, color = 'green') {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = Math.max(2, (window.devicePixelRatio || 1));
+      ctx.beginPath();
+      ctx.arc(origin.x + h * gridSize, origin.y - k * gridSize, r * gridSize, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    function plotLine(a, b, c, color = 'blue') {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = Math.max(2, (window.devicePixelRatio || 1));
+      ctx.beginPath();
+
+      let first = true;
+      // protegemos división por cero (b = 0) -> vertical
+      if (Math.abs(b) < 1e-6) {
+        const x = c / a;
+        const px = origin.x + x * gridSize;
+        ctx.moveTo(px, 0);
+        ctx.lineTo(px, canvas.height);
+        ctx.stroke();
+        return;
+      }
+
+      // trazar usando rango en x
+      const step = 0.2;
+      for (let gx = -Math.ceil(canvas.width / gridSize); gx <= Math.ceil(canvas.width / gridSize); gx += step) {
+        const x = gx;
+        const y = (c - a * x) / b;
+        const px = origin.x + x * gridSize;
+        const py = origin.y - y * gridSize;
+        if (first) {
+          ctx.moveTo(px, py);
+          first = false;
+        } else {
+          ctx.lineTo(px, py);
+        }
+      }
+      ctx.stroke();
+    }
+
+    /* ===== Lógica del juego (basada en tu JS) ===== */
+    let currentProblem = null;
+    let stepIndex = 0;
+
+    function generateProblem(modo, dificultad) {
+      if (modo === 'construye') {
+        let center = { h: 0, k: 0 }, r = 0;
+        if (dificultad === 'facil') { center = { h: 0, k: 0 }; r = 4; }
+        if (dificultad === 'medio') { center = { h: 2, k: -1 }; r = 3; }
+        if (dificultad === 'dificil') { center = { h: -3, k: 2 }; r = 5; }
+
+        return {
+          type: 'circulo',
+          data: { h: center.h, k: center.k, r },
+          text: `Dibuja el círculo de centro (h,k) y radio r. Escribe la ecuación estándar.`,
+          steps: [
+            { label: 'Centro h', formula: 'h = ...', key: 'h' },
+            { label: 'Centro k', formula: 'k = ...', key: 'k' },
+            { label: 'Radio r', formula: 'r = ...', key: 'r' },
+            { label: 'Ecuación estándar', formula: '(x - h)^2 + (y - k)^2 = r^2', key: 'eq' }
+          ]
+        };
+      }
+
+      if (modo === 'identifica') {
+        return {
+          type: 'recta',
+          data: { a: 2, b: 1, c: 4 },
+          text: `Determina la ecuación de la recta en la forma ax + by = c.`,
+          steps: [
+            { label: 'a', formula: 'a = ...', key: 'a' },
+            { label: 'b', formula: 'b = ...', key: 'b' },
+            { label: 'c', formula: 'c = ...', key: 'c' },
+            { label: 'Ecuación', formula: 'ax + by = c', key: 'eq' }
+          ]
+        };
+      }
+      return null;
+    }
+
+    function renderProblem(problem) {
+      currentProblem = problem;
+      stepIndex = 0;
+      stepsList.innerHTML = '';
+      problemaTexto.textContent = problem.text || '';
+
+      drawGrid();
+
+      if (problem.type === 'circulo') {
+        plotCircle(problem.data.h, problem.data.k, problem.data.r);
+      }
+      if (problem.type === 'recta') {
+        plotLine(problem.data.a, problem.data.b, problem.data.c);
+      }
+
+      // crear pasos
+      problem.steps.forEach((s, i) => {
+        const div = document.createElement('div');
+        div.className = 'step';
+
+        const label = document.createElement('label');
+        label.textContent = s.label + ':';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = 'step-input-' + i;
+        input.placeholder = s.formula;
+
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.style.minWidth = '110px';
+        btn.textContent = 'Verificar';
+        btn.addEventListener('click', () => verifyStep(i));
+
+        const verdict = document.createElement('div');
+        verdict.id = 'verdict-' + i;
+        verdict.className = 'verdict';
+
+        div.appendChild(label);
+        div.appendChild(input);
+        div.appendChild(btn);
+        div.appendChild(verdict);
+
+        stepsList.appendChild(div);
+      });
+
+      // ocultar siguiente hasta completar
+      nextBtn.classList.add('hidden');
+    }
+
+    function verifyStep(i) {
+      const inp = document.getElementById('step-input-' + i);
+      if (!inp) return;
+      const val = inp.value.trim();
+      const key = currentProblem.steps[i].key;
+      const verdict = document.getElementById('verdict-' + i);
+
+      if (key === 'eq') {
+        if (currentProblem.type === 'circulo') {
+          let h = currentProblem.data.h;
+          let k = currentProblem.data.k;
+          let r = currentProblem.data.r;
+          // generamos algunas variantes aceptables: (x - h)^2 + (y - k)^2 = r^2  (con o sin espacios)
+          let expected = `(x-${h})^2+(y-${k})^2=${r * r}`.replace(/\s+/g, '');
+          if (val.replace(/\s+/g, '') === expected) {
+            verdict.textContent = '✔ Correcto';
+            verdict.style.color = 'green';
+            inp.disabled = true;
+            enableNextStep(i);
+          } else {
+            verdict.textContent = '❌ Incorrecto';
+            verdict.style.color = 'crimson';
+          }
+        } else if (currentProblem.type === 'recta') {
+          let { a, b, c } = currentProblem.data;
+          let expected = `${a}x+${b}y=${c}`.replace(/\s+/g, '');
+          if (val.replace(/\s+/g, '') === expected) {
+            verdict.textContent = '✔ Correcto';
+            verdict.style.color = 'green';
+            inp.disabled = true;
+            enableNextStep(i);
+          } else {
+            verdict.textContent = '❌ Incorrecto';
+            verdict.style.color = 'crimson';
+          }
+        }
+        return;
+      }
+
+      // claves simples: h, k, r, a, b, c
+      if (String(val) === String(currentProblem.data[key])) {
+        verdict.textContent = '✔ Correcto';
+        verdict.style.color = 'green';
+        inp.disabled = true;
+        enableNextStep(i);
+      } else {
+        verdict.textContent = '❌ Incorrecto';
+        verdict.style.color = 'crimson';
+      }
+    }
+
+    function enableNextStep(i) {
+      const allDone = currentProblem.steps.every((s, idx) => {
+        const v = document.getElementById('verdict-' + idx);
+        return v && v.textContent && v.textContent.startsWith('✔');
+      });
+      if (allDone) {
+        nextBtn.classList.remove('hidden');
+      }
+    }
+
+    /* ===== Botones UI ===== */
+    startBtn.addEventListener('click', () => {
+      const nombre = document.getElementById('inputNombre').value.trim();
+      usuarioNombre.textContent = nombre || '(sin nombre)';
+      const modo = document.getElementById('modo').value;
+      const dif = document.getElementById('dificultad').value;
+
+      if (!modo) {
+        alert('Selecciona un modo');
+        return;
+      }
+      const p = generateProblem(modo, dif);
+      renderProblem(p);
+    });
+
+    nextBtn.addEventListener('click', () => {
+      const modo = document.getElementById('modo').value;
+      const dif = document.getElementById('dificultad').value;
+      const p = generateProblem(modo, dif);
+      renderProblem(p);
+    });
+
+    function doReset() {
+      // limpiar UI y recargar estado (sin recargar la página)
+      document.getElementById('inputNombre').value = '';
+      document.getElementById('modo').value = '';
+      document.getElementById('dificultad').value = 'facil';
+      usuarioNombre.textContent = '(sin nombre)';
+      problemaTexto.textContent = 'Inicia el juego para ver un problema.';
+      stepsList.innerHTML = '';
+      currentProblem = null;
+      drawGrid();
+      nextBtn.classList.add('hidden');
+    }
+
+    resetBtnTop.addEventListener('click', doReset);
+    resetBtn.addEventListener('click', doReset);
+
+    /* ===== Inicialización ===== */
+    resizeCanvas(); // dibuja según contenedor
+
+    // si el DOM ya cambió de tamaño después del primer paint, asegurar refresco final
+    setTimeout(resizeCanvas, 300);
+
+    // Exponer para debugging si necesitas (opcional)
+    window._app = {
+      resizeCanvas, drawGrid, plotCircle, plotLine, plotPoint
+    };
+
+  </script>
 </body>
 </html>
