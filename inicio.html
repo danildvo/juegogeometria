@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Trayectorias y Lugares Geométricos — Juego</title>
+  <link rel="stylesheet" href="inicio.css" />
+</head>
+
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Juego de Trayectorias y Lugares Geométricos</h1>
+    <p id="usuarioNombre" class="muted">(sin nombre)</p>
+  </header>
+
+  <div class="top-row">
+    <!-- PANEL IZQUIERDO -->
+    <div class="left-col">
+      <label>Tu nombre:</label>
+      <input type="text" id="inputNombre" placeholder="Escribe tu nombre">
+
+      <label>Modo de juego:</label>
+      <select id="modo">
+        <option value="">Selecciona...</option>
+        <option value="construye">Construye la figura</option>
+        <option value="identifica">Identifica la ecuación</option>
+      </select>
+
+      <label>Dificultad:</label>
+      <select id="dificultad">
+        <option value="facil">Fácil</option>
+        <option value="medio">Medio</option>
+        <option value="dificil">Difícil</option>
+      </select>
+
+      <br><br>
+      <button class="btn" id="startBtn">Iniciar</button>
+      <button class="btn next-btn hidden" id="nextProblem">Siguiente problema</button>
+      <button class="btn reset" id="resetBtn">Reiniciar</button>
+    </div>
+
+    <!-- PANEL DERECHO -->
+    <div class="right-col">
+      <h3>Problema</h3>
+      <div id="problemaTexto" class="problem">Inicia el juego para ver un problema.</div>
+
+      <h3>Pasos</h3>
+      <div id="stepsList" class="steps"></div>
+    </div>
+  </div>
+
+  <!-- CANVAS -->
+  <div class="canvas-wrap">
+    <canvas id="plano" width="600" height="400"></canvas>
+  </div>
+
+</div>
+
+<script src="inicio.js"></script>
+</body>
+</html>

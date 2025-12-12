@@ -1,0 +1,107 @@
+:root {
+  --bg:#f3f0ff;
+  --card:#ffffff;
+  --accent:#7f5af0;
+  --muted:#6b6b81;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+  background: url('https://i.imgur.com/Q3a1e7W.jpg') center/cover no-repeat fixed;
+  color: #222;
+}
+
+.wrap {
+  max-width:1100px;
+  margin:28px auto;
+  padding:18px;
+}
+
+header {
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  margin-bottom:18px;
+}
+
+h1 {
+  margin:0;
+  font-size:26px;
+  color:var(--accent);
+}
+
+.top-row {
+  display:flex;
+  gap:20px;
+}
+
+.left-col {
+  flex:1;
+  background:var(--card);
+  padding:16px;
+  border-radius:12px;
+  box-shadow:0 8px 20px rgba(31,22,80,0.06);
+}
+
+.right-col {
+  width:320px;
+  background:linear-gradient(180deg,#faf6ff,#f3edff);
+  padding:14px;
+  border-radius:12px;
+  border:2px solid rgba(127,90,240,0.08);
+}
+
+label {
+  display:block;
+  font-weight:600;
+  margin-top:10px;
+  color:var(--muted);
+}
+
+input[type=text],select {
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #e6e0ff;
+  margin-top:8px;
+}
+
+.btn {
+  display:inline-block;
+  padding:10px 14px;
+  border-radius:10px;
+  border:none;
+  background:var(--accent);
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+  margin-right:5px;
+}
+
+.reset { background:#ef4444; }
+.next-btn { background:#33b17a; }
+
+.canvas-wrap {
+  margin-top:14px;
+}
+
+canvas {
+  background:#fff;
+  border-radius:10px;
+  border:2px solid rgba(0,0,0,0.08);
+}
+
+.problem, .steps {
+  margin-top:12px;
+  background:#fff;
+  padding:12px;
+  border-radius:10px;
+}
+
+.problem {
+  border:1px dashed rgba(127,90,240,0.12);
+}
+
+.hidden { display:none; }
